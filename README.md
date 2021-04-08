@@ -94,7 +94,7 @@ PS C:\Users\developer> minikube.exe service list
 
 2.　Exposeでサービスを開始する。
 
-PS C:\Users\developer> kubectl.exe expose deployment nginx-test --type=LoadBalancer --port=8080
+PS C:\Users\developer> kubectl.exe expose deployment nginx-test --type=LoadBalancer --port=80
 service/nginx-test exposed
 
 PS C:\Users\developer> minikube.exe service list
@@ -103,7 +103,7 @@ PS C:\Users\developer> minikube.exe service list
 |----------------------|---------------------------|--------------|-----------------------------|
 | default              | kubernetes                | No node port |
 | default              | mongo-db                  |        27017 | http://192.168.99.101:30877 |
-| default              | nginx-test                |         8080 | http://192.168.99.101:30055 |
+| default              | nginx-test                |           80 | http://192.168.99.101:30055 |
 | kube-system          | kube-dns                  | No node port |
 | kubernetes-dashboard | dashboard-metrics-scraper | No node port |
 | kubernetes-dashboard | kubernetes-dashboard      | No node port |
