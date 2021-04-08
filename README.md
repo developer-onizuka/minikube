@@ -63,3 +63,96 @@ k8s.gcr.io/coredns                        1.7.0      bfe3a36ebd25   9 months ago
 kubernetesui/metrics-scraper              v1.0.4     86262685d9ab   12 months ago   36.9MB
 k8s.gcr.io/pause                          3.2        80d28bedfe5d   13 months ago   683kB
 ```
+
+
+```
+1.　Nginx-testという名前のDeploymentを作ると、その配下に「nginx-test-68f9dc86dd-7mgcg」というPodができる。
+
+PS C:\Users\developer> kubectl.exe create deployment nginx-test --image nginx:1.16.1
+deployment.apps/nginx-test created
+
+PS C:\Users\developer> kubectl.exe get deployment
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+mongo-db     1/1     1            1           73m
+nginx-test   1/1     1            1           3s
+
+PS C:\Users\developer> kubectl.exe get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+mongo-db-768556df94-47vdx     1/1     Running   0          73m
+nginx-test-68f9dc86dd-7mgcg   1/1     Running   0          12s
+
+PS C:\Users\developer> minikube.exe service list
+|----------------------|---------------------------|--------------|-----------------------------|
+|      NAMESPACE       |           NAME            | TARGET PORT  |             URL             |
+|----------------------|---------------------------|--------------|-----------------------------|
+| default              | kubernetes                | No node port |
+| default              | mongo-db                  |        27017 | http://192.168.99.101:30877 |
+| kube-system          | kube-dns                  | No node port |
+| kubernetes-dashboard | dashboard-metrics-scraper | No node port |
+| kubernetes-dashboard | kubernetes-dashboard      | No node port |
+|----------------------|---------------------------|--------------|-----------------------------|
+
+2.　Exposeでサービスを開始する。
+
+PS C:\Users\developer> kubectl.exe expose deployment nginx-test --type=LoadBalancer --port=8080
+service/nginx-test exposed
+
+PS C:\Users\developer> minikube.exe service list
+|----------------------|---------------------------|--------------|-----------------------------|
+|      NAMESPACE       |           NAME            | TARGET PORT  |             URL             |
+|----------------------|---------------------------|--------------|-----------------------------|
+| default              | kubernetes                | No node port |
+| default              | mongo-db                  |        27017 | http://192.168.99.101:30877 |
+| default              | nginx-test                |         8080 | http://192.168.99.101:30055 |
+| kube-system          | kube-dns                  | No node port |
+| kubernetes-dashboard | dashboard-metrics-scraper | No node port |
+| kubernetes-dashboard | kubernetes-dashboard      | No node port |
+|----------------------|---------------------------|--------------|-----------------------------|
+
+PS C:\Users\developer> kubectl.exe get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+mongo-db-768556df94-47vdx     1/1     Running   0          84m
+nginx-test-68f9dc86dd-fkgw2   1/1     Running   0          15s
+
+X.　PodをDeleteすると、自動的にDeploymentが次のPodを生成する。
+　　Deploymentを作らずに、Run等で直接Podを作ってDeploymentの配下に入れない場合は、このような自動生成はない。
+
+PS C:\Users\developer> kubectl.exe delete pod nginx-test-68f9dc86dd-fkgw2
+pod "nginx-test-68f9dc86dd-fkgw2" deleted
+
+PS C:\Users\developer> kubectl.exe get pod
+NAME                          READY   STATUS        RESTARTS   AGE
+mongo-db-768556df94-47vdx     1/1     Running       0          85m
+nginx-test-68f9dc86dd-2mwxs   1/1     Running       0          3s
+nginx-test-68f9dc86dd-fkgw2   0/1     Terminating   0          40s
+
+PS C:\Users\developer> kubectl.exe get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+mongo-db-768556df94-47vdx     1/1     Running   0          85m
+nginx-test-68f9dc86dd-2mwxs   1/1     Running   0          9s
+
+
+Y.　Runで作ったPodを消してみる。
+
+PS C:\Users\developer> kubectl.exe run nginx-pod --image=nginx:1.16.1
+pod/nginx-pod created
+
+PS C:\Users\developer> kubectl.exe get deployment
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+mongo-db     1/1     1            1           94m
+nginx-test   1/1     1            1           20m
+
+PS C:\Users\developer> kubectl.exe get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+mongo-db-768556df94-47vdx     1/1     Running   0          94m
+nginx-pod                     1/1     Running   0          9s
+nginx-test-68f9dc86dd-2mwxs   1/1     Running   0          9m12s
+
+PS C:\Users\developer> kubectl.exe delete pod nginx-pod
+pod "nginx-pod" deleted
+
+PS C:\Users\developer> kubectl.exe get pod
+NAME                          READY   STATUS    RESTARTS   AGE
+mongo-db-768556df94-47vdx     1/1     Running   0          95m
+nginx-test-68f9dc86dd-2mwxs   1/1     Running   0          10m
+```
