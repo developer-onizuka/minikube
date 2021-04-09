@@ -156,3 +156,51 @@ NAME                          READY   STATUS    RESTARTS   AGE
 mongo-db-768556df94-47vdx     1/1     Running   0          95m
 nginx-test-68f9dc86dd-2mwxs   1/1     Running   0          10m
 ```
+
+```
+PS C:\Users\developer> minikube.exe start
+* Microsoft Windows 10 Pro 10.0.19042 Build 19042 上の minikube v1.18.1
+* プロフィールを元に、 virtualbox ドライバを使用します
+* コントロールプレーンのノード minikube を minikube 上で起動しています
+* 既存の virtualbox VM を "minikube" のために再起動しています...
+* Docker 20.10.3 で Kubernetes v1.20.2 を準備しています...
+* Kubernetes コンポーネントを検証しています...
+  - Using image kubernetesui/dashboard:v2.1.0
+  - Using image kubernetesui/metrics-scraper:v1.0.4
+  - Using image gcr.io/k8s-minikube/storage-provisioner:v4
+* 有効なアドオン: storage-provisioner, default-storageclass, dashboard
+* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+
+
+PS C:\Users\developer> kubectl.exe get node
+NAME       STATUS   ROLES                  AGE     VERSION
+minikube   Ready    control-plane,master   3d17h   v1.20.2
+
+PS C:\Users\developer> minikube.exe node list
+minikube        192.168.99.101
+
+PS C:\Users\developer> minikube.exe node add
+* 「m02」というノードを「minikube」というクラスタに追加します
+! Cluster was created without any CNI, adding node to it might cause broken network.
+E0409 16:30:39.938381    9656 register.go:141] unexpected first step: ""
+* Starting node minikube-m02 in cluster minikube
+E0409 16:30:39.959531    9656 register.go:141] unexpected first step: ""
+* virtualbox VM (CPUs=2, Memory=2200MB, Disk=20000MB) を作成しています.../ E0409 16:31:42.454584    9656 register.go:141] unexpected first step: ""
+
+* Docker 20.10.3 で Kubernetes v1.20.2 を準備しています...- E0409 16:31:50.573351    9656 register.go:141] unexpected first step: ""
+
+* Kubernetes コンポーネントを検証しています...
+* Successfully added m02 to minikube!
+PS C:\Users\developer>
+PS C:\Users\developer>
+PS C:\Users\developer>
+PS C:\Users\developer> kubectl.exe get node
+NAME           STATUS   ROLES                  AGE     VERSION
+minikube       Ready    control-plane,master   3d17h   v1.20.2
+minikube-m02   Ready    <none>                 19s     v1.20.2
+
+PS C:\Users\developer> minikube.exe node list
+minikube        192.168.99.101
+minikube-m02    192.168.99.102
+
+```
