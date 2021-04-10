@@ -1,3 +1,4 @@
+# 1. Run minikube node at Virtualbox.
 ```
 PS C:\Users\developer> D:
 PS D:\>
@@ -14,7 +15,6 @@ Mode                 LastWriteTime         Length Name
 -a----        2021/04/05     22:29       41442816 kubectl.exe
 
 
-PS D:\k8s>
 PS D:\k8s> minikube start --vm-driver=virtualbox
 * Microsoft Windows 10 Pro 10.0.19042 Build 19042 上の minikube v1.18.1
 * 設定を元に、 virtualbox ドライバを使用します
@@ -33,6 +33,10 @@ PS D:\k8s> minikube start --vm-driver=virtualbox
   - Using image gcr.io/k8s-minikube/storage-provisioner:v4
 * 有効なアドオン: storage-provisioner, default-storageclass
 * Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+```
+
+# 2. Check the status of minikube.
+```
 PS D:\k8s> minikube.exe status
 minikube
 type: Control Plane
@@ -41,7 +45,10 @@ kubelet: Running
 apiserver: Running
 kubeconfig: Configured
 timeToStop: Nonexistent
+```
 
+# 3. Login to minikube node through ssh.
+```
 PS D:\k8s> minikube.exe ssh
                          _             _
             _         _ ( )           ( )
@@ -64,21 +71,17 @@ kubernetesui/metrics-scraper              v1.0.4     86262685d9ab   12 months ag
 k8s.gcr.io/pause                          3.2        80d28bedfe5d   13 months ago   683kB
 ```
 
-
+# 4. Create Deployment with in-line commands.
 ```
-1.　Nginx-testという名前のDeploymentを作ると、その配下に「nginx-test-68f9dc86dd-7mgcg」というPodができる。
-
 PS C:\Users\developer> kubectl.exe create deployment nginx-test --image nginx:1.16.1
 deployment.apps/nginx-test created
 
 PS C:\Users\developer> kubectl.exe get deployment
 NAME         READY   UP-TO-DATE   AVAILABLE   AGE
-mongo-db     1/1     1            1           73m
 nginx-test   1/1     1            1           3s
 
 PS C:\Users\developer> kubectl.exe get pod
 NAME                          READY   STATUS    RESTARTS   AGE
-mongo-db-768556df94-47vdx     1/1     Running   0          73m
 nginx-test-68f9dc86dd-7mgcg   1/1     Running   0          12s
 
 PS C:\Users\developer> minikube.exe service list
@@ -86,14 +89,14 @@ PS C:\Users\developer> minikube.exe service list
 |      NAMESPACE       |           NAME            | TARGET PORT  |             URL             |
 |----------------------|---------------------------|--------------|-----------------------------|
 | default              | kubernetes                | No node port |
-| default              | mongo-db                  |        27017 | http://192.168.99.101:30877 |
 | kube-system          | kube-dns                  | No node port |
 | kubernetes-dashboard | dashboard-metrics-scraper | No node port |
 | kubernetes-dashboard | kubernetes-dashboard      | No node port |
 |----------------------|---------------------------|--------------|-----------------------------|
+```
 
-2.　Exposeでサービスを開始する。
-
+# 5. Start service with Expose option.
+```
 PS C:\Users\developer> kubectl.exe expose deployment nginx-test --type=LoadBalancer --port=80
 service/nginx-test exposed
 
@@ -102,38 +105,31 @@ PS C:\Users\developer> minikube.exe service list
 |      NAMESPACE       |           NAME            | TARGET PORT  |             URL             |
 |----------------------|---------------------------|--------------|-----------------------------|
 | default              | kubernetes                | No node port |
-| default              | mongo-db                  |        27017 | http://192.168.99.101:30877 |
 | default              | nginx-test                |           80 | http://192.168.99.101:30055 |
 | kube-system          | kube-dns                  | No node port |
 | kubernetes-dashboard | dashboard-metrics-scraper | No node port |
 | kubernetes-dashboard | kubernetes-dashboard      | No node port |
 |----------------------|---------------------------|--------------|-----------------------------|
+```
 
-PS C:\Users\developer> kubectl.exe get pod
-NAME                          READY   STATUS    RESTARTS   AGE
-mongo-db-768556df94-47vdx     1/1     Running   0          84m
-nginx-test-68f9dc86dd-fkgw2   1/1     Running   0          15s
-
-X.　PodをDeleteすると、自動的にDeploymentが次のPodを生成する。
-　　Deploymentを作らずに、Run等で直接Podを作ってDeploymentの配下に入れない場合は、このような自動生成はない。
-
+# 6. Delete the pod and check what will happen.
+# When you delete a pod, Deployment automatically creates the next pod. If you do not create pod through Deployment and create a pod directly with "kubectl run", there is no such automatic generation.
+```
 PS C:\Users\developer> kubectl.exe delete pod nginx-test-68f9dc86dd-fkgw2
 pod "nginx-test-68f9dc86dd-fkgw2" deleted
 
 PS C:\Users\developer> kubectl.exe get pod
 NAME                          READY   STATUS        RESTARTS   AGE
-mongo-db-768556df94-47vdx     1/1     Running       0          85m
 nginx-test-68f9dc86dd-2mwxs   1/1     Running       0          3s
 nginx-test-68f9dc86dd-fkgw2   0/1     Terminating   0          40s
 
 PS C:\Users\developer> kubectl.exe get pod
 NAME                          READY   STATUS    RESTARTS   AGE
-mongo-db-768556df94-47vdx     1/1     Running   0          85m
 nginx-test-68f9dc86dd-2mwxs   1/1     Running   0          9s
+```
 
-
-Y.　Runで作ったPodを消してみる。
-
+# 7. Check the difference between the pods created "kubectl run" and "kubectl create deployment".
+```
 PS C:\Users\developer> kubectl.exe run nginx-pod --image=nginx:1.16.1
 pod/nginx-pod created
 
@@ -157,129 +153,4 @@ mongo-db-768556df94-47vdx     1/1     Running   0          95m
 nginx-test-68f9dc86dd-2mwxs   1/1     Running   0          10m
 ```
 
-# 1. Run minikube and specify the number of nodes to spin up.
-```
-PS C:\Users\developer> minikube.exe start --nodes=2
-* Microsoft Windows 10 Pro 10.0.19042 Build 19042 上の minikube v1.18.1
-* virtualboxドライバーが自動的に選択されました
-* コントロールプレーンのノード minikube を minikube 上で起動しています
-* virtualbox VM (CPUs=2, Memory=2200MB, Disk=20000MB) を作成しています...
-* Docker 20.10.3 で Kubernetes v1.20.2 を準備しています...
-  - Generating certificates and keys ...
-  - Booting up control plane ...
-  - Configuring RBAC rules ...
-* Configuring CNI (Container Networking Interface) ...
-* Kubernetes コンポーネントを検証しています...
-  - Using image gcr.io/k8s-minikube/storage-provisioner:v4
-* 有効なアドオン: storage-provisioner, default-storageclass
 
-* Starting node minikube-m02 in cluster minikube
-* virtualbox VM (CPUs=2, Memory=2200MB, Disk=20000MB) を作成しています...
-* ネットワーク オプションが見つかりました
-  - NO_PROXY=192.168.99.106
-  - no_proxy=192.168.99.106
-* Docker 20.10.3 で Kubernetes v1.20.2 を準備しています...
-  - env NO_PROXY=192.168.99.106
-* Kubernetes コンポーネントを検証しています...
-* Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
-```
-
-# 2. Check the nodes which run in the kubernets cluster.
-```
-PS C:\Users\developer> minikube.exe node list
-minikube        192.168.99.106
-minikube-m02    192.168.99.107
-```
-
-# 3. Put labels on each node.
-```
-PS D:\k8s\deployment> kubectl.exe label nodes minikube location=tokyo
-node/minikube labeled
-PS D:\k8s\deployment> kubectl.exe label nodes minikube-m02 location=telaviv
-node/minikube-m02 labeled
-
-PS D:\k8s\deployment> kubectl.exe describe node minikube | Select-String "location"
-
-                    location=tokyo
-
-PS D:\k8s\deployment> kubectl.exe describe node minikube-m02 | Select-String "location"
-
-                    location=telaviv
-
-```
-
-# 4. Edit yaml file for Nginx and create Deployment.
-```
-PS D:\k8s\deployment> cat .\ngingx_1.14.2.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-test
-spec:
-  selector:
-    matchLabels:
-      run: nginx-test
-  replicas: 2
-  template:
-    metadata:
-      labels:
-        run: nginx-test
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.14.2
-        ports:
-        - containerPort: 80
-
-PS D:\k8s\deployment> kubectl.exe create -f .\ngingx_1.14.2.yaml
-deployment.apps/nginx-test created
-```
-
-# 5. Check if the pods running and which nodes the pods are running at. 
-```
-PS D:\k8s\deployment> kubectl.exe describe node minikube | Select-String "nginx"
-PS D:\k8s\deployment> kubectl.exe describe node minikube-m02 | Select-String "nginx"
-
-  default                     nginx-test-767864879b-mbfvv    0 (0%)        0 (0%)      0 (0%)           0 (0%)           2m33s
-  default                     nginx-test-767864879b-w5qsg    0 (0%)        0 (0%)      0 (0%)           0 (0%)           2m33s
-```
-
-# 6. Create a new yaml file Nginx will run at minikube-m02 and apply it.
-```
-PS D:\k8s\deployment> cat .\ngingx_1.14.2_nodeSelector.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-test
-spec:
-  selector:
-    matchLabels:
-      run: nginx-test
-  replicas: 2
-  template:
-    metadata:
-      labels:
-        run: nginx-test
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:1.14.2
-        ports:
-        - containerPort: 80
-      nodeSelector:
-        location: tokyo
-
-PS D:\k8s\deployment> kubectl.exe apply -f .\ngingx_1.14.2_nodeSelector.yaml
-```
-
-# 7. Check again if the pods running and which nodes the pods are running at. 
-```
-PS D:\k8s\deployment> kubectl.exe describe node minikube | Select-String "nginx"
-
-  default                     nginx-test-7876d8684d-j8cr2         0 (0%)        0 (0%)      0 (0%)           0 (0%)         27s
-  default                     nginx-test-7876d8684d-vl4l7         0 (0%)        0 (0%)      0 (0%)           0 (0%)         25s
-
-PS D:\k8s\deployment> kubectl.exe describe node minikube-m02 | Select-String "nginx"
-```
